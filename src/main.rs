@@ -54,71 +54,66 @@ fn find_match(
             let specific_amount_queue = fetched_queue.get_mut(&match_param.entry_amount);
             match specific_amount_queue {
                 Some(res) => {
-                    if res.len() <= 1 {
-                        Json(Err("wait".to_string()))
-                    } else {
-                        // initializing a match that maybe some match got found got replaced
-                        let mut _match: MatchFound = MatchFound {
-                            questions: get_rand_questions(),
-                            contestant: "un-init".to_string(),
-                        };
+                    // initializing a match that maybe some match got found got replaced
+                    let mut _match: MatchFound = MatchFound {
+                        questions: get_rand_questions(),
+                        contestant: "un-init".to_string(),
+                    };
 
-                        for (idx, user) in res.into_iter().enumerate() {
-                            if user != &match_param.user {
-                                _match.contestant = user.clone();
-                                // deleting the requested
-                                res.remove(idx);
-                                break;
-                            }
+                    for (idx, user) in res.into_iter().enumerate() {
+                        if user != &match_param.user {
+                            _match.contestant = user.clone();
+                            // deleting the requested
+                            res.remove(idx);
+                            break;
                         }
-                        for (idx, user) in res.into_iter().enumerate() {
-                            if user == &match_param.user {
-                                _match.contestant = user.clone();
-                                // deleting the requestor
-                                res.remove(idx);
-                                break;
-                            }
-                        }
-                        // adding to ongoing matches
-                        let game_room_key: String =
-                            create_key_hash(&match_param.user, &_match.contestant.clone());
-                        fetched_ongoing_queue
-                            .insert(
-                                game_room_key.clone(),
-                                MatchRoomState {
-                                    questions: _match.questions.clone(),
-                                    con_1_res: None,
-                                    con_2_res: None,
-                                    contestant1: match_param.user.clone(),
-                                    contestant2: _match.contestant.clone(),
-                                    con_1_fetched: false,
-                                    con_2_fetched: false,
-                                },
-                            )
-                            .unwrap();
-
-                        // adding to the users game rooms
-                        fetched_user_matches
-                            .insert(match_param.user.clone(), game_room_key.clone())
-                            .unwrap();
-                        fetched_user_matches
-                            .insert(_match.contestant.clone(), game_room_key.clone())
-                            .unwrap();
-
-                        // deleting from the user
-
-                        return Json(Ok(MatchFound {
-                            questions: "".to_string(),
-                            contestant: "".to_string(),
-                        }));
                     }
+                    if _match.contestant == "un-init".to_string() {
+                        return Json(Err("no one found, wait".to_string()));
+                    }
+
+                    for (idx, user) in res.into_iter().enumerate() {
+                        if user == &match_param.user {
+                            _match.contestant = user.clone();
+                            // deleting the requestor
+                            res.remove(idx);
+                            break;
+                        }
+                    }
+                    // adding to ongoing matches
+                    let game_room_key: String =
+                        create_key_hash(&match_param.user, &_match.contestant.clone());
+                    let _ = fetched_ongoing_queue
+                        .insert(
+                            game_room_key.clone(),
+                            MatchRoomState {
+                                questions: _match.questions.clone(),
+                                con_1_res: None,
+                                con_2_res: None,
+                                contestant1: match_param.user.clone(),
+                                contestant2: _match.contestant.clone(),
+                                con_1_fetched: false,
+                                con_2_fetched: false,
+                            },
+                        )
+                        .is_none();
+
+                    // adding to the users game rooms
+                    let _ = fetched_user_matches
+                        .insert(match_param.user.clone(), game_room_key.clone())
+                        .is_none();
+                    let _ = fetched_user_matches
+                        .insert(_match.contestant.clone(), game_room_key.clone())
+                        .is_none();
+
+                    return Json(Ok(_match));
                 }
 
                 None => {
-                    fetched_queue
+                    let _ = fetched_queue
                         .insert(match_param.entry_amount, vec![match_param.user.clone()])
-                        .unwrap();
-                    Json(Err("wait".to_string()))
+                        .is_none();
+                    Json(Err("added you, wait".to_string()))
                 }
             }
         }
@@ -143,24 +138,24 @@ fn finish_match(
                         res.con_1_fetched = true;
                         let con_2_fetched_res = res.con_2_fetched;
                         let con_2 = res.contestant2.clone();
-                        let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
+                        let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
                         if con_2_fetched_res {
                             fetched_ongoing_queue.remove(room_key);
                             fetched_user_matches.remove(&finish_param.contestant);
                             fetched_user_matches.remove(&con_2);
                         }
-                        return Json(Ok(con_1_result));
+                        return Json(Ok(con_2_result));
                     } else {
                         res.con_2_fetched = true;
                         let con_1_fetched_res = res.con_1_fetched;
                         let con_1 = res.contestant2.clone();
-                        let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
+                        let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
                         if con_1_fetched_res {
                             fetched_ongoing_queue.remove(room_key);
                             fetched_user_matches.remove(&finish_param.contestant);
                             fetched_user_matches.remove(&con_1);
                         }
-                        return Json(Ok(con_2_result));
+                        return Json(Ok(con_1_result));
                     }
                 }
 
