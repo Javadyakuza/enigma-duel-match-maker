@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use rocket::{FromForm, State};
+use rocket::{FromForm, FromFormValue, State};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, FromForm)]
@@ -16,13 +16,20 @@ pub struct MatchFound {
     pub contestant: String,
 }
 
-#[derive(Serialize, Deserialize, FromForm)]
+#[derive(Serialize, Deserialize, FromForm, Clone)]
 pub struct MatchResult {
     pub q1: bool,
     pub q2: bool,
     pub q3: bool,
 }
-
+impl MatchResult {
+    pub fn to_bin_string(&self) -> String {
+        vec![self.q1, self.q2, self.q3]
+            .into_iter()
+            .map(|res| if res { 1.to_string() } else { 0.to_string() })
+            .collect()
+    }
+}
 #[derive(Serialize, Deserialize)]
 pub struct MatchRoomState {
     pub questions: String,
@@ -32,6 +39,14 @@ pub struct MatchRoomState {
     pub contestant2: String,
     pub con_1_fetched: bool,
     pub con_2_fetched: bool,
+}
+
+#[derive(Serialize, Deserialize, FromForm)]
+pub struct FinishGameParams {
+    pub q1: bool,
+    pub q2: bool,
+    pub q3: bool,
+    pub contestant: String,
 }
 
 pub struct Queue {

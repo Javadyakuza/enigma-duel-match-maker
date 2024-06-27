@@ -6,7 +6,9 @@ use std::mem::ManuallyDrop;
 use std::sync::Mutex;
 
 use helpers::{create_key_hash, get_rand_questions};
-use models::{MatchFound, MatchRoomState, OngoingMatches, UserMatches};
+use models::{
+    FinishGameParams, MatchFound, MatchResult, MatchRoomState, OngoingMatches, UserMatches,
+};
 use rocket::request::{Form, Request};
 use rocket::*;
 use rocket_contrib::json::Json;
@@ -123,6 +125,67 @@ fn find_match(
     }
 }
 
+#[post("/finish-match", data = "<finish_param>")]
+fn finish_match(
+    ongo_queue: State<OngoingMatches>,
+    users_matches: State<UserMatches>,
+    finish_param: Form<FinishGameParams>,
+) -> Json<Result<String, String>> {
+    // consider add ing the user to the queue
+    let mut fetched_user_matches = users_matches.matches.lock().unwrap();
+    let mut fetched_ongoing_queue = ongo_queue.queue.lock().unwrap();
+
+    match fetched_user_matches.get(&finish_param.contestant) {
+        Some(room_key) => match fetched_ongoing_queue.get_mut(room_key) {
+            Some(res) => {
+                if res.con_1_res.is_some() && res.con_2_res.is_some() {
+                    if finish_param.contestant == res.contestant1 {
+                        res.con_1_fetched = true;
+                        let con_2_fetched_res = res.con_2_fetched;
+                        let con_2 = res.contestant2.clone();
+                        let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
+                        if con_2_fetched_res {
+                            fetched_ongoing_queue.remove(room_key);
+                            fetched_user_matches.remove(&finish_param.contestant);
+                            fetched_user_matches.remove(&con_2);
+                        }
+                        return Json(Ok(con_1_result));
+                    } else {
+                        res.con_2_fetched = true;
+                        let con_1_fetched_res = res.con_1_fetched;
+                        let con_1 = res.contestant2.clone();
+                        let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
+                        if con_1_fetched_res {
+                            fetched_ongoing_queue.remove(room_key);
+                            fetched_user_matches.remove(&finish_param.contestant);
+                            fetched_user_matches.remove(&con_1);
+                        }
+                        return Json(Ok(con_2_result));
+                    }
+                }
+
+                if finish_param.contestant == res.contestant1 {
+                    res.con_1_res = Some(MatchResult {
+                        q1: finish_param.q1,
+                        q2: finish_param.q2,
+                        q3: finish_param.q3,
+                    });
+                    return Json(Err("wait".to_string()));
+                } else {
+                    res.con_2_res = Some(MatchResult {
+                        q1: finish_param.q1,
+                        q2: finish_param.q2,
+                        q3: finish_param.q3,
+                    });
+                    return Json(Err("wait".to_string()));
+                }
+            }
+            None => Json(Err("failed to fetch game room".to_string())),
+        },
+        None => Json(Err("user doesn't have game room".to_string())),
+    }
+}
+
 // implement the upload results
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -140,7 +203,7 @@ fn main() {
             matches: Mutex::new(HashMap::new()),
         })
         .register(catchers![not_found])
-        .mount("/api", routes![find_match])
+        .mount("/api", routes![find_match, finish_match])
         .launch();
     // needs the "cargo build and then cargo run to be ran oin the fucking serve"
 }
