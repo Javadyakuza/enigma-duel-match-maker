@@ -69,12 +69,13 @@ fn find_match(
                         }
                     }
                     if _match.contestant == "un-init".to_string() {
+                        res.push(match_param.user.clone());
                         return Json(Err("no one found, wait".to_string()));
                     }
 
                     for (idx, user) in res.into_iter().enumerate() {
                         if user == &match_param.user {
-                            _match.contestant = user.clone();
+                            // _match.contestant = user.clone();
                             // deleting the requestor
                             res.remove(idx);
                             break;
