@@ -11,6 +11,8 @@ use models::{
 };
 use rocket::request::{Form, Request};
 use rocket::*;
+use rocket_cors::{AllowedHeaders, AllowedOrigins, Error};
+
 use rocket_contrib::json::Json;
 pub mod helpers;
 pub mod models;
@@ -193,8 +195,55 @@ fn finish_match(
 fn not_found(req: &Request) -> String {
     format!("Oh no the {} path doesn't exists !!", req.uri())
 }
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::Header;
+use rocket::Response;
+
+pub struct Cors;
+
+impl Fairing for Cors {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response,
+        }
+    }
+
+    fn on_response(&self, request: &Request, response: &mut Response) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, GET, PATCH, OPTIONS",
+        ));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
 fn main() {
+    // Allowed origins can be specified as exact strings or as regex patterns
+    let allowed_origins = AllowedOrigins::some_exact(&["http://localhost:5173"]);
+
+    // Configure CORS
+    // let cors = rocket_cors::CorsOptions {
+    //     allowed_origins,
+    //     allowed_methods: vec![
+    //         rocket_http::Method::Get,
+    //         rocket_http::Method::Post,
+    //         rocket_http::Method::Put,
+    //         rocket_http::Method::Delete,
+    //     ]
+    //     .into_iter()
+    //     .map(From::from)
+    //     .collect(),
+    //     allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
+    //     allow_credentials: true,
+    //     ..Default::default()
+    // }
+    // .to_cors()
+    // .unwrap();
+
     rocket::ignite()
+        .attach(Cors)
         .manage(Queue {
             queue: Mutex::new(HashMap::new()),
         })

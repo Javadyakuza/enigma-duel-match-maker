@@ -10,6 +10,8 @@ serde_json = "1.0.108"
 rocket = "0.4.5"
 rand = "0.8.5"
 cosmwasm-std = "2.0.4"
+rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master" }
+rocket_http = "0.5.0"
 
 [dependencies.rocket_contrib]
 version = "0.4.5"
