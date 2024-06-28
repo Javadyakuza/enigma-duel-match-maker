@@ -149,7 +149,8 @@ pub fn create_game_room(
     prize_pool: i32,
 ) -> Result<(), String> {
     // Define the path to your Node.js script
-    let node_script_path = "./js_scripts/create_game_room.js"; // Update this with the actual path
+    let node_script_path =
+        "/home/javadyakuza/Desktop/enigma_duel_match_maker/js_scripts/create_game_room.js"; // Update this with the actual path
 
     // Execute the Node.js script with arguments
     let output = Command::new("node")
@@ -172,7 +173,8 @@ pub fn create_game_room(
 
 pub fn finish_game_room(game_room_key: String, winner: String) -> Result<(), String> {
     // Define the path to your Node.js script
-    let node_script_path = "./js_scripts/finish_game_room.js"; // Update this with the actual path
+    let node_script_path =
+        "/home/javadyakuza/Desktop/enigma_duel_match_maker/js_scripts/finish_game_room.js"; // Update this with the actual path
 
     // Execute the Node.js script with arguments
     let output = Command::new("node")
@@ -205,6 +207,6 @@ pub fn determine_winner(user1: &str, user2: &str) -> String {
     } else if count2 > count1 {
         return user2.to_string();
     } else {
-        return "".to_string(); // It's a tie
+        return "\"\"".to_string(); // It's a tie
     }
 }
