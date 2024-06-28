@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::mem::ManuallyDrop;
 use std::sync::Mutex;
 
-use helpers::{create_key_hash, get_rand_questions};
+use helpers::{create_game_room, create_key_hash, get_rand_questions};
 use models::{
     FinishGameParams, MatchFound, MatchResult, MatchRoomState, OngoingMatches, UserMatches,
 };
@@ -115,6 +115,13 @@ fn find_match(
                         .insert(_match.contestant.clone(), game_room_key.clone())
                         .is_none();
 
+                    create_game_room(
+                        match_param.user.clone(),
+                        _match.contestant.clone(),
+                        match_param.entry_amount,
+                    )
+                    .unwrap();
+                    // sending the request to contract to create a game room
                     return Json(Ok(_match));
                 }
 

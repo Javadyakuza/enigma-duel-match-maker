@@ -1,7 +1,6 @@
 use rand::seq::{index, SliceRandom};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
-use serde_json::Result;
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -129,4 +128,33 @@ pub fn create_key_hash(con_1: &str, con_2: &str) -> String {
     to_json_binary(&format!("{}{}", con_1, con_2))
         .unwrap()
         .to_string()
+}
+
+use std::process::Command;
+
+pub fn create_game_room(
+    contestant1: String,
+    contestant2: String,
+    prize_pool: i32,
+) -> Result<(), ()> {
+    // Define the path to your Node.js script
+    let node_script_path = "./js_scripts/create_game_room.js"; // Update this with the actual path
+
+    // Execute the Node.js script with arguments
+    let output = Command::new("node")
+        .arg(node_script_path)
+        .arg(contestant1)
+        .arg(contestant2)
+        .arg(prize_pool.to_string())
+        .output()
+        .expect("Failed to execute Node.js script");
+
+    // Print the output from the script
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if stdout.contains("Error") || stderr.contains("Error") {
+        Err(())
+    } else {
+        Ok(())
+    }
 }
