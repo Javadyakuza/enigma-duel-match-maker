@@ -129,7 +129,7 @@ fn find_match(
                     create_game_room(
                         match_param.user.clone(),
                         _match.contestant.clone(),
-                        match_param.entry_amount,
+                        match_param.entry_amount * 2,
                     )
                     .unwrap();
                     // sending the request to contract to create a game room
