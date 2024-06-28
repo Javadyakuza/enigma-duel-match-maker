@@ -44,7 +44,7 @@ async function finish_match(game_room_key, winner) {
   let finish_game_room = {
     finish_game_room: {
       game_room_finish_params: {
-        game_room_key: `${game_room_key}`,
+        game_room_id: `${game_room_key}`,
         result: result,
       },
     },
@@ -70,7 +70,7 @@ const args = process.argv.slice(2);
 const game_room_key = args[0];
 const winner = args[1];
 
-create_match(game_room_key, winner).then((result) => {
+finish_match(game_room_key, winner).then((result) => {
   if (result) {
     console.log(result);
   }
