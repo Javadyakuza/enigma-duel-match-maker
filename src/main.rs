@@ -5,7 +5,9 @@ use std::collections::HashMap;
 use std::mem::ManuallyDrop;
 use std::sync::Mutex;
 
-use helpers::{create_game_room, create_key_hash, get_rand_questions};
+use helpers::{
+    create_game_room, create_key_hash, determine_winner, finish_game_room, get_rand_questions,
+};
 use models::{
     FinishGameParams, MatchFound, MatchResult, MatchRoomState, OngoingMatches, UserMatches,
 };
@@ -155,7 +157,10 @@ fn finish_match(
                         let con_2_fetched_res = res.con_2_fetched;
                         let con_2 = res.contestant2.clone();
                         let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
+                        let winner = determine_winner(&finish_param.contestant, &con_2);
+
                         if con_2_fetched_res {
+                            finish_game_room(room_key.clone(), winner).unwrap();
                             fetched_ongoing_queue.remove(room_key);
                             fetched_user_matches.remove(&finish_param.contestant);
                             fetched_user_matches.remove(&con_2);
@@ -166,7 +171,9 @@ fn finish_match(
                         let con_1_fetched_res = res.con_1_fetched;
                         let con_1 = res.contestant2.clone();
                         let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
+                        let winner = determine_winner(&finish_param.contestant, &con_1);
                         if con_1_fetched_res {
+                            finish_game_room(room_key.clone(), winner).unwrap();
                             fetched_ongoing_queue.remove(room_key);
                             fetched_user_matches.remove(&finish_param.contestant);
                             fetched_user_matches.remove(&con_1);

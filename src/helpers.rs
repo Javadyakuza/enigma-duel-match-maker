@@ -158,3 +158,42 @@ pub fn create_game_room(
         Ok(())
     }
 }
+
+pub fn finish_game_room(game_room_key: String, winner: String) -> Result<(), ()> {
+    // Define the path to your Node.js script
+    let node_script_path = "./js_scripts/finish_game_room.js"; // Update this with the actual path
+
+    // Execute the Node.js script with arguments
+    let output = Command::new("node")
+        .arg(node_script_path)
+        .arg(game_room_key)
+        .arg(winner)
+        .output()
+        .expect("Failed to execute Node.js script");
+
+    // Print the output from the script
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if stdout.contains("Error") || stderr.contains("Error") {
+        Err(())
+    } else {
+        Ok(())
+    }
+}
+fn count_trues(s: &str) -> usize {
+    s.chars().filter(|&c| c == '1').count()
+}
+pub fn determine_winner(user1: &str, user2: &str) -> String {
+    // Count the number of '1's in each string
+    let count1 = count_trues(user1);
+    let count2 = count_trues(user2);
+
+    // Determine the winner
+    if count1 > count2 {
+        return user1.to_string();
+    } else if count2 > count1 {
+        return user2.to_string();
+    } else {
+        return "".to_string(); // It's a tie
+    }
+}
