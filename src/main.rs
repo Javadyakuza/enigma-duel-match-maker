@@ -39,9 +39,9 @@ fn find_match(
             // fetching the game room state
             let game_room_state = fetched_ongoing_queue.get(res).unwrap();
             let contestant = if game_room_state.contestant1 == match_param.user {
-                game_room_state.contestant1.clone()
-            } else {
                 game_room_state.contestant2.clone()
+            } else {
+                game_room_state.contestant1.clone()
             };
             Json(Ok(MatchFound {
                 questions: game_room_state.questions.clone(),
