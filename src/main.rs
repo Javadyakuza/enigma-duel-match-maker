@@ -34,9 +34,12 @@ fn find_match(
     match_param: Form<MakeMatch>,
 ) -> Json<Result<MatchFound, String>> {
     // consider add ing the user to the queue
-    let mut fetched_queue = q_queue.queue.lock().unwrap();
-    let mut fetched_user_matches = users_matches.matches.lock().unwrap();
-    let mut fetched_ongoing_queue = ongo_queue.queue.lock().unwrap();
+    let mut fetched_queue = q_queue.queue.lock().unwrap_or_else(|e| e.into_inner());
+    let mut fetched_user_matches = users_matches
+        .matches
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    let mut fetched_ongoing_queue = ongo_queue.queue.lock().unwrap_or_else(|e| e.into_inner());
 
     match fetched_user_matches.get(&match_param.user) {
         // some other user has already made a match with this user
@@ -146,8 +149,11 @@ fn finish_match(
     finish_param: Form<FinishGameParams>,
 ) -> Json<Result<String, String>> {
     // consider add ing the user to the queue
-    let mut fetched_user_matches = users_matches.matches.lock().unwrap();
-    let mut fetched_ongoing_queue = ongo_queue.queue.lock().unwrap();
+    let mut fetched_user_matches = users_matches
+        .matches
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    let mut fetched_ongoing_queue = ongo_queue.queue.lock().unwrap_or_else(|e| e.into_inner());
 
     match fetched_user_matches.get(&finish_param.contestant) {
         Some(room_key) => match fetched_ongoing_queue.get_mut(room_key) {
