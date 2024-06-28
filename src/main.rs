@@ -3,6 +3,7 @@ extern crate rocket;
 
 use std::collections::HashMap;
 use std::mem::ManuallyDrop;
+use std::str::FromStr;
 use std::sync::Mutex;
 
 use helpers::{
@@ -13,7 +14,7 @@ use models::{
 };
 use rocket::request::{Form, Request};
 use rocket::*;
-use rocket_cors::{AllowedHeaders, AllowedOrigins, Error};
+use rocket_cors::{AllowedHeaders, AllowedMethods, AllowedOrigins, Error};
 
 use rocket_contrib::json::Json;
 pub mod helpers;
@@ -234,30 +235,25 @@ impl Fairing for Cors {
     }
 }
 fn main() {
-    // Allowed origins can be specified as exact strings or as regex patterns
-    let allowed_origins = AllowedOrigins::some_exact(&["http://localhost:5173"]);
+    let allowed_origins = AllowedOrigins::all();
 
-    // Configure CORS
-    // let cors = rocket_cors::CorsOptions {
-    //     allowed_origins,
-    //     allowed_methods: vec![
-    //         rocket_http::Method::Get,
-    //         rocket_http::Method::Post,
-    //         rocket_http::Method::Put,
-    //         rocket_http::Method::Delete,
-    //     ]
-    //     .into_iter()
-    //     .map(From::from)
-    //     .collect(),
-    //     allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
-    //     allow_credentials: true,
-    //     ..Default::default()
-    // }
-    // .to_cors()
-    // .unwrap();
+    let allowed_origins: AllowedOrigins = AllowedOrigins::all();
+    let allowed_methods: AllowedMethods = ["Get", "Post", "Delete"]
+        .iter()
+        .map(|s| FromStr::from_str(s).unwrap())
+        .collect();
+    let allowed_headers: AllowedHeaders = AllowedHeaders::all();
+    let options = rocket_cors::Cors {
+        allowed_origins: allowed_origins,
+        allowed_methods: allowed_methods,
+        allowed_headers: allowed_headers,
+        allow_credentials: true,
+        ..Default::default()
+    };
 
     rocket::ignite()
         .attach(Cors)
+        .attach(options)
         .manage(Queue {
             queue: Mutex::new(HashMap::new()),
         })
