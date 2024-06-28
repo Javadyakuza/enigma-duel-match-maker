@@ -1,5 +1,5 @@
 const { SigningArchwayClient } = require("@archwayhq/arch3.js");
-const { GasPrice } = require("@cosmjs/stargate");
+// const { GasPrice } = require("@cosmjs/stargate");
 const { Buffer } = require("buffer");
 const process = require("process");
 const addresses = require("./constants");
@@ -28,10 +28,10 @@ async function finish_match(game_room_key, winner) {
     wallet
   );
 
-  const gasPrice = GasPrice.fromString("0.02aconst");
-  if (!gasPrice) {
-    throw new Error("Failed to initialize gas price");
-  }
+  // const gasPrice = GasPrice.fromString("0.02aconst");
+  // if (!gasPrice) {
+  //   throw new Error("Failed to initialize gas price");
+  // }
 
   const account = await wallet.getAccounts();
   console.log(account);

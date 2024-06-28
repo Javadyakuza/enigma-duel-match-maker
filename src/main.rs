@@ -171,7 +171,7 @@ fn finish_match(
                         let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
                         let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
                         let winner = determine_winner(&con_1_result, &con_2_result);
-                        if con_2_fetched_res {
+                        if !con_2_fetched_res {
                             println!("finishing {}{}", room_key.clone(), winner);
                             finish_game_room(room_key.clone(), winner).unwrap();
                             fetched_ongoing_queue.remove(room_key);
@@ -186,7 +186,7 @@ fn finish_match(
                         let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
                         let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
                         let winner = determine_winner(&con_1_result, &con_2_result);
-                        if con_1_fetched_res {
+                        if !con_1_fetched_res {
                             println!("finishing {}{}", room_key.clone(), winner);
                             finish_game_room(room_key.clone(), winner).unwrap();
                             fetched_ongoing_queue.remove(room_key);
