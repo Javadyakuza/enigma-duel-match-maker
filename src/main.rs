@@ -121,7 +121,7 @@ fn find_match(
                         .is_none();
 
                     println!(
-                        "{}{}{}",
+                        " creatingg {}{}{}",
                         match_param.user.clone(),
                         _match.contestant.clone(),
                         match_param.entry_amount
@@ -168,9 +168,9 @@ fn finish_match(
                         res.con_1_fetched = true;
                         let con_2_fetched_res = res.con_2_fetched;
                         let con_2 = res.contestant2.clone();
+                        let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
                         let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
-                        let winner = determine_winner(&finish_param.contestant, &con_2);
-
+                        let winner = determine_winner(&con_1_result, &con_2_result);
                         if con_2_fetched_res {
                             println!("finishing {}{}", room_key.clone(), winner);
                             finish_game_room(room_key.clone(), winner).unwrap();
@@ -184,7 +184,8 @@ fn finish_match(
                         let con_1_fetched_res = res.con_1_fetched;
                         let con_1 = res.contestant2.clone();
                         let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
-                        let winner = determine_winner(&finish_param.contestant, &con_1);
+                        let con_2_result = res.con_2_res.clone().unwrap().to_bin_string();
+                        let winner = determine_winner(&con_1_result, &con_2_result);
                         if con_1_fetched_res {
                             println!("finishing {}{}", room_key.clone(), winner);
                             finish_game_room(room_key.clone(), winner).unwrap();
