@@ -1,7 +1,7 @@
 use rand::seq::{index, SliceRandom};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Question {
@@ -106,7 +106,7 @@ pub fn get_rand_questions() -> String {
     let mut rng = rand::thread_rng();
 
     // Generate three random numbers between 1 and 10 (inclusive)
-    let random_numbers: Vec<u32> = (0..3).map(|_| rng.gen_range(1..=10)).collect();
+    let random_numbers: Vec<u32> = generate_unique_random_numbers(3, 1..=10);
 
     let indexes: Vec<String> = random_numbers
         .into_iter()
@@ -122,6 +122,17 @@ pub fn get_rand_questions() -> String {
     serde_json::to_string(&selected_questions).unwrap()
 }
 
+fn generate_unique_random_numbers(count: usize, range: std::ops::RangeInclusive<u32>) -> Vec<u32> {
+    let mut rng = rand::thread_rng();
+    let mut unique_numbers = HashSet::new();
+
+    while unique_numbers.len() < count {
+        let num = rng.gen_range(range.clone());
+        unique_numbers.insert(num);
+    }
+
+    unique_numbers.into_iter().collect()
+}
 use cosmwasm_std::to_json_binary;
 
 pub fn create_key_hash(con_1: &str, con_2: &str) -> String {
@@ -136,7 +147,7 @@ pub fn create_game_room(
     contestant1: String,
     contestant2: String,
     prize_pool: i32,
-) -> Result<(), ()> {
+) -> Result<(), String> {
     // Define the path to your Node.js script
     let node_script_path = "./js_scripts/create_game_room.js"; // Update this with the actual path
 
@@ -153,13 +164,13 @@ pub fn create_game_room(
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
     if stdout.contains("Error") || stderr.contains("Error") {
-        Err(())
+        Err(format!("{}{}", stdout, stderr))
     } else {
         Ok(())
     }
 }
 
-pub fn finish_game_room(game_room_key: String, winner: String) -> Result<(), ()> {
+pub fn finish_game_room(game_room_key: String, winner: String) -> Result<(), String> {
     // Define the path to your Node.js script
     let node_script_path = "./js_scripts/finish_game_room.js"; // Update this with the actual path
 
@@ -175,7 +186,7 @@ pub fn finish_game_room(game_room_key: String, winner: String) -> Result<(), ()>
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
     if stdout.contains("Error") || stderr.contains("Error") {
-        Err(())
+        Err(format!("{}{}", stdout, stderr))
     } else {
         Ok(())
     }
