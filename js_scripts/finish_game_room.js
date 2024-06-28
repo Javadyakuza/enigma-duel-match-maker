@@ -13,7 +13,7 @@ global.process = process;
 require("dotenv").config();
 
 async function finish_match(game_room_key, winner) {
-  console.log(addresses);
+  console.log(game_room_key, winner);
   const network = {
     endpoint: "https://rpc.constantine.archway.io",
     prefix: "archway",
@@ -36,19 +36,27 @@ async function finish_match(game_room_key, winner) {
   const account = await wallet.getAccounts();
   console.log(account);
   let result;
+  let finish_game_room;
   if (winner == "") {
-    result = { draw: {} };
-  } else {
-    result = { win: { addr: `${winner}` } };
-  }
-  let finish_game_room = {
-    finish_game_room: {
-      game_room_finish_params: {
-        game_room_id: `${game_room_key}`,
-        result: result,
+    finish_game_room = {
+      finish_game_room: {
+        game_room_finish_params: {
+          game_room_id: `${game_room_key}`,
+          result: { draw: {} },
+        },
       },
-    },
-  };
+    };
+  } else {
+    finish_game_room = {
+      finish_game_room: {
+        game_room_finish_params: {
+          game_room_id: `${game_room_key}`,
+          result: { win: { addr: `${winner}` } },
+        },
+      },
+    };
+  }
+
   admin
     .execute(
       account[0].address,
@@ -70,8 +78,12 @@ const args = process.argv.slice(2);
 const game_room_key = args[0];
 const winner = args[1];
 
-finish_match(game_room_key, winner).then((result) => {
-  if (result) {
-    console.log(result);
-  }
-});
+finish_match(game_room_key, winner)
+  .then((result) => {
+    if (result) {
+      console.log(result);
+    }
+  })
+  .catch((err) => {
+    console.log(err);
+  });

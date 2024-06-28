@@ -13,7 +13,7 @@ global.process = process;
 require("dotenv").config();
 
 async function create_match(contestant1, contestant2, prizePool) {
-  console.log(addresses);
+  console.log(contestant1, contestant2, prizePool);
   const network = {
     endpoint: "https://rpc.constantine.archway.io",
     prefix: "archway",
@@ -70,8 +70,12 @@ const contestant1 = args[0];
 const contestant2 = args[1];
 const prizePool = args[2];
 
-create_match(contestant1, contestant2, prizePool).then((result) => {
-  if (result) {
-    console.log(result);
-  }
-});
+create_match(contestant1, contestant2, prizePool)
+  .then((result) => {
+    if (result) {
+      console.log(result);
+    }
+  })
+  .catch((err) => {
+    console.log(err);
+  });
