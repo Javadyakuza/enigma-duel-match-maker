@@ -89,7 +89,6 @@ fn find_match(
 
                     for (idx, user) in res.into_iter().enumerate() {
                         if user == &match_param.user {
-                            _match.contestant = user.clone();
                             // deleting the requestor
                             res.remove(idx);
                             break;
@@ -121,6 +120,12 @@ fn find_match(
                         .insert(_match.contestant.clone(), game_room_key.clone())
                         .is_none();
 
+                    println!(
+                        "{}{}{}",
+                        match_param.user.clone(),
+                        _match.contestant.clone(),
+                        match_param.entry_amount
+                    );
                     create_game_room(
                         match_param.user.clone(),
                         _match.contestant.clone(),
@@ -167,6 +172,7 @@ fn finish_match(
                         let winner = determine_winner(&finish_param.contestant, &con_2);
 
                         if con_2_fetched_res {
+                            println!("finishing {}{}", room_key.clone(), winner);
                             finish_game_room(room_key.clone(), winner).unwrap();
                             fetched_ongoing_queue.remove(room_key);
                             fetched_user_matches.remove(&finish_param.contestant);
@@ -180,6 +186,7 @@ fn finish_match(
                         let con_1_result = res.con_1_res.clone().unwrap().to_bin_string();
                         let winner = determine_winner(&finish_param.contestant, &con_1);
                         if con_1_fetched_res {
+                            println!("finishing {}{}", room_key.clone(), winner);
                             finish_game_room(room_key.clone(), winner).unwrap();
                             fetched_ongoing_queue.remove(room_key);
                             fetched_user_matches.remove(&finish_param.contestant);
